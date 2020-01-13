@@ -1,5 +1,7 @@
 # dlib-pytorch-benchmark
-A very naive and simple benchmark between dlib and pytorch in terms of space and time
+A very naive and simple benchmark between dlib and pytorch in terms of space and time.
+
+This benchmarks were run on a NVIDIA GeForce GTX 1080 Ti with CUDA 10.2.89 and CUDNN 7.6.5.32 on Arch Linux.
 
 ## Model instantiation
 Probably, this is a completely useless benchmark, but it's provided for completion, nonetheless.
