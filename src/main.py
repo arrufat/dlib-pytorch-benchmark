@@ -18,19 +18,23 @@ with torch.no_grad():
     print("instantiation time:", (t1 - t0) * 1000, "ms")
     input()
 
+    torch.cuda.synchronize() # wait for GPU to finish computation
     t0 = time()
     model = model.cuda()
     x = x.cuda()
     model(x)
+    torch.cuda.synchronize() # wait for GPU to finish computation
     t1 = time()
     print("1st inference time:", (t1 - t0) * 1000, "ms")
     input()
 
     for i in range(10):
         x = x.cpu().cuda()
+        torch.cuda.synchronize() # wait for GPU to finish computation        
         t0 = time()
         out = model(x)
         # out = out.cpu()
+        torch.cuda.synchronize() # wait for GPU to finish computation
         t1 = time()
         print("2nd inference time:", (t1 - t0) * 1000, "ms")
     input()
