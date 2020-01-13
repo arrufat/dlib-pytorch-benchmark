@@ -1,2 +1,128 @@
 # dlib-pytorch-benchmark
 A very naive and simple benchmark between dlib and pytorch in terms of space and time
+
+## Model instantiation
+Probably, this is a completely useless benchmark, but it's provided for completion, nonetheless.
+
+### PyTorch
+``` python
+model = resnet50(pretrained=False)
+```
+
+### dlib
+``` c++
+resnet::infer net;
+```
+
+## 1st inference
+This is also not very meaningful, since most of the time is spent allocating memory in the GPU.
+
+### PyTorch
+``` python
+x = torch.zeros(512, 3, 224, 224)
+x = x.cuda()
+model = model.cuda()
+# time measurement start
+out = model(x)
+# time measurement end
+```
+
+### Dlib
+``` c++
+dlib::matrix<dlib::rgb_pixel image(224, 224);
+dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
+std::vector<dlib::matrix<dlib::rgb_pixel> minibatch(512, image);
+```
+
+At this point, we could just call:
+``` c++
+const auto out = net(minibatch, 512);
+```
+But that wouldn't be a fair comparison, since it would do some extra work:
+- apply softmax to the output of the net
+- transfer the result from the device to the host
+
+As a result, we need to forward a tensor that is already in the device.
+There are several ways of doing it, here's one:
+
+``` c++
+dlib::resizable tensor x;
+net.to_tensor(minibatch.begin(), minibatch.end(), x);
+x.device();
+// time measurement start
+net.subnet().forward(x);
+// time measurement end
+```
+Now dlib is doing exactly the same operations as PyTorch, as far as I know.
+
+## Next inferences
+In my opininion, the most important benchmark is this one.
+It measures how the network performs once it has been "warmed up".
+
+For this part, I decided not to count the cuda syncronization time, only the inference time for a tensor that is already in the device.
+
+### PyTorch
+In PyTorch, every time I forward the network, I make sure all the transfers between the host and the device have been finished:
+
+``` python
+for i in range(100):
+    x = x.cpu().cuda()
+    # time measurement start
+    out = model(x)
+    # time measurement end
+```
+The times measured for each inference are around 6 ms, no matter the batch size (which is a good indicator that there are no memory transfers).
+
+### dlib
+For dlib I followed a similar pattern:
+
+``` c++
+for (int i = 0; i < 100; ++i)
+{
+    x.host();
+    x.device();
+    // time measurement start
+    net.subnet().forward(x);
+    // time measurement end
+}
+```
+Here, the times measured for the first inference varies with the batch size (for 512 is around 100 ms).
+However, the rest of forward calls are around 0.9 ms and indenpendent from the batch size.
+
+Since the first call timing variability is systematic, we can just ignore it, since when the network works in a steady state the forward pass time is constant.
+
+Nevertheless, if somebody has any idea of why this is happening, I would really love to know more.
+
+## Results
+
+The following table shows the average timings in ms for a tensor of shape 512x3x224x224.
+
+| Test           |  PyTorch |   dlib   |  Factor  |
+|---------------:|:--------:|:--------:|:--------:|
+|  instantiation |  239.672 |    0.078 | 3072.718 |
+|  1st inference | 2267.113 | 1766.070 |    1.284 |
+| next inference |    6.164 |    0.905 |    6.811 |
+
+I've also measured the VRAM usage in MiB for different batch sizes:
+
+| batch size | PyTorch | dlib | Factor |
+|-----------:|:-------:|:----:|:------:|
+|          0 |     473 |  522 |   1.10 |
+|          1 |     711 |  526 |   0.74 |
+|          2 |     709 |  534 |   0.75 |
+|          4 |     729 |  552 |   0.76 |
+|          8 |     765 |  556 |   0.73 |
+|         16 |     881 | 1790 |   2.03 |
+|         32 |    1211 |  782 |   0.65 |
+|         64 |    1689 | 1070 |   0.63 |
+|        128 |    2303 | 1628 |   0.71 |
+|        256 |    3945 | 2706 |   0.69 |
+|        512 |    7225 | 4848 |   0.67 |
+|       1024 |     N/A | 9146 |    N/A |
+
+I don't know what happend with the batch size of 16...
+
+## Conclusions
+
+From this simple benchmark I can only draw the obvious conclusion:
+dlib is faster and uses less VRAM.
