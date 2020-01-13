@@ -11,7 +11,7 @@ model = resnet50(pretrained=False)
 
 ### dlib
 ``` c++
-resnet::infer net;
+resnet<dlib::affine>::_50 net;
 ```
 
 ## 1st inference
@@ -29,9 +29,9 @@ out = model(x)
 
 ### Dlib
 ``` c++
-dlib::matrix<dlib::rgb_pixel image(224, 224);
+dlib::matrix<dlib::rgb_pixel> image(224, 224);
 dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
-std::vector<dlib::matrix<dlib::rgb_pixel> minibatch(512, image);
+std::vector<dlib::matrix<dlib::rgb_pixel>> minibatch(512, image);
 ```
 
 At this point, we could just call:
@@ -95,34 +95,29 @@ Nevertheless, if somebody has any idea of why this is happening, I would really 
 
 ## Results
 
-The following table shows the average timings in ms for a tensor of shape 512x3x224x224.
+The following table shows the average timings in ms for a tensor of shape 128x3x224x224.
 
 | Test           |  PyTorch |   dlib   |  Factor  |
 |---------------:|:--------:|:--------:|:--------:|
 |  instantiation |  239.672 |    0.078 | 3072.718 |
-|  1st inference | 2267.113 | 1766.070 |    1.284 |
+|  1st inference | 1160.368 | 2609.590 |    1.284 |
 | next inference |    6.164 |    0.905 |    6.811 |
 
 I've also measured the VRAM usage in MiB for different batch sizes:
 
 | batch size | PyTorch | dlib | Factor |
 |-----------:|:-------:|:----:|:------:|
-|          0 |     473 |  522 |   1.10 |
-|          1 |     711 |  526 |   0.74 |
-|          2 |     709 |  534 |   0.75 |
-|          4 |     729 |  552 |   0.76 |
-|          8 |     765 |  556 |   0.73 |
-|         16 |     881 | 1790 |   2.03 |
-|         32 |    1211 |  782 |   0.65 |
-|         64 |    1689 | 1070 |   0.63 |
-|        128 |    2303 | 1628 |   0.71 |
-|        256 |    3945 | 2706 |   0.69 |
-|        512 |    7225 | 4848 |   0.67 |
-|       1024 |     N/A | 9146 |    N/A |
-
-I don't know what happend with the batch size of 16...
+|          0 |     473 |  600 |   1.27 |
+|          1 |     711 |  632 |   0.89 |
+|          2 |     709 |  706 |   0.99 |
+|          4 |     729 |  840 |   1.15 |
+|          8 |     765 | 1092 |   1.43 |
+|         16 |     881 | 1556 |   1.77 |
+|         32 |    1211 | 2604 |   2.15 |
+|         64 |    1689 | 4536 |   2.68 |
+|        128 |    2303 | 8374 |   3.64 |
 
 ## Conclusions
 
 From this simple benchmark I can only draw the obvious conclusion:
-dlib is faster and uses less VRAM.
+dlib is faster but uses more VRAM than PyTorch.
