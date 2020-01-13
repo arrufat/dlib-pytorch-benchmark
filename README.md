@@ -102,7 +102,7 @@ The following table shows the average timings in ms for a tensor of shape 128x3x
 | Test           |  PyTorch |   dlib   |  Factor  |
 |---------------:|:--------:|:--------:|:--------:|
 |  instantiation |  239.672 |    0.078 | 3072.718 |
-|  1st inference | 1160.368 | 2609.590 |    1.284 |
+|  1st inference | 1160.368 | 2609.590 |    2.250 |
 | next inference |    6.164 |    0.905 |    6.811 |
 
 I've also measured the VRAM usage in MiB for different batch sizes:
