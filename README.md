@@ -29,7 +29,7 @@ out = model(x)
 # time measurement end
 ```
 
-### Dlib
+### dlib
 ``` c++
 dlib::matrix<dlib::rgb_pixel> image(224, 224);
 dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
