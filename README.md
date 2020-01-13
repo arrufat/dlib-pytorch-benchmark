@@ -67,7 +67,7 @@ For this part, I decided not to count the cuda syncronization time, only the inf
 In PyTorch, every time I forward the network, I make sure all the transfers between the host and the device have been finished:
 
 ``` python
-for i in range(100):
+for i in range(10):
     x = x.cpu().cuda()
     # time measurement start
     out = model(x)
@@ -79,7 +79,7 @@ The times measured for each inference are around 6 ms, no matter the batch size 
 For dlib I followed a similar pattern:
 
 ``` c++
-for (int i = 0; i < 100; ++i)
+for (int i = 0; i < 10; ++i)
 {
     x.host();
     x.device();
@@ -88,7 +88,7 @@ for (int i = 0; i < 100; ++i)
     // time measurement end
 }
 ```
-Here, the times measured for the first inference varies with the batch size (for 512 is around 100 ms).
+Here, the times measured for the first inference varies with the batch size (for 128 is around 90 ms).
 However, the rest of forward calls are around 0.9 ms and indenpendent from the batch size.
 
 Since the first call timing variability is systematic, we can just ignore it, since when the network works in a steady state the forward pass time is constant.
