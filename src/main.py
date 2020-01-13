@@ -2,6 +2,7 @@ import torch
 from sys import argv
 from time import time
 from torchvision.models import resnet50
+torch.backends.cudnn.benchmark=True
 
 minibatch_size = 1
 if len(argv) > 1:
