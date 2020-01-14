@@ -99,11 +99,11 @@ Nevertheless, if somebody has any idea of why this is happening, I would really 
 
 The following table shows the average timings in ms for a tensor of shape 128x3x224x224.
 
-| Test           |  PyTorch |   dlib   |  Factor  |
-|---------------:|:--------:|:--------:|:--------:|
-|  instantiation |  239.672 |    0.078 | 3072.718 |
-|  1st inference | 1160.368 | 2609.590 |    2.250 |
-| next inference |    6.164 |    0.905 |    6.811 |
+| Test           |  PyTorch |   dlib   |
+|---------------:|:--------:|:--------:|
+|  instantiation |  239.672 |    0.078 |
+|  1st inference | 1160.368 | 2609.590 |
+| next inference |    6.164 |    0.905 |
 
 I've also measured the VRAM usage in MiB for different batch sizes:
 
@@ -123,3 +123,8 @@ I've also measured the VRAM usage in MiB for different batch sizes:
 
 From this simple benchmark I can only draw the obvious conclusion:
 dlib is faster but uses more VRAM than PyTorch.
+
+I am still not sure I am measuring the inference times in a fair way for both toolkits, so I will keep digging.
+
+As for the memory usage, PyTorch models are stateless, meaning that one can't access any intermediate values of the model.
+On the dlib side, we can call `subnet()` on our `net` and then get the outputs, gradients (if we performed a backward pass), which makes it very easy to extract attention maps and perform grad-cam visualization.
