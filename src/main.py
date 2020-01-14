@@ -1,9 +1,11 @@
 import torch
+from os import environ
 from sys import argv
 from time import time
 from torchvision.models import resnet50
 
 torch.backends.cudnn.benchmark = True
+environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 minibatch_size = 1
 if len(argv) > 1:
@@ -28,16 +30,15 @@ with torch.no_grad():
     print("1st inference time:", (t1 - t0) * 1000, "ms")
     input()
 
-    for i in range(10):
+    times = []
+    for i in range(100):
         x = x.cpu().cuda()
         t0 = time()
         out = model(x)
-        # out = out.cpu()
+        out = out.cpu()
         t1 = time()
-        print("2nd inference time:", (t1 - t0) * 1000, "ms")
+        times.append(t1 - t0)
+        print("2nd inference time:", (t1 - t0) * 1000, "ms", end='\r')
+    print()
+    print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
     input()
-
-    # model2 = resnet50(pretrained=True).cuda()
-    # out = model2(x.clone())
-    # print("2nd model loaded")
-    # input()

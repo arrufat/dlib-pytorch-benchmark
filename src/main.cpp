@@ -1,4 +1,7 @@
+#include <algorithm>
+#include <numeric>
 #include <chrono>
+#include <cstdlib>
 #include <iostream>
 
 #include <dlib/image_processing.h>
@@ -9,6 +12,7 @@ using fms = std::chrono::duration<float, std::milli>;
 
 int main(const int argc, const char** argv) try
 {
+    setenv("CUDA_LAUNCH_BLOCKING", "1", 1);
     std::chrono::time_point<std::chrono::steady_clock> t0, t1;
     float duration{};
 
@@ -47,7 +51,8 @@ int main(const int argc, const char** argv) try
     std::cout << "output shape: " << y.num_samples() << 'x' << y.k() << 'x' << y.nr() << 'x' << y.nc() << std::endl;
     std::cin.get();
 
-    for (int i = 0; i < 10; ++i)
+    std::array<float, 100> times;
+    for (auto& time : times)
     {
         x.host();
         x.device();
@@ -55,8 +60,14 @@ int main(const int argc, const char** argv) try
         net.subnet().forward(x);
         t1 = std::chrono::steady_clock::now();
         duration = std::chrono::duration_cast<fms>(t1 - t0).count();
-        std::cout << "2nd inference time: " << duration << " ms" << std::endl;
+        std::cout << "2nd inference time: " << duration << " ms   \r" << std::flush;
+        time = duration;
     }
+    std::cout << std::endl;
+    std::cout <<
+        "avg: " << std::fixed << std::setprecision(3) <<
+        std::accumulate(times.begin(), times.end(), 0.f, std::plus<float>()) / times.size() <<
+        " ms" << std::endl;
     std::cin.get();
 
     return EXIT_SUCCESS;
