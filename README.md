@@ -122,10 +122,10 @@ The following table shows the VRAM usage in MiB and the average timings in ms fo
 
 ## Conclusions
 
-From this simple benchmark I can only draw the obvious conclusion:
-dlib is faster but uses more VRAM than PyTorch.
-
 I am still not sure I am measuring the inference times in a fair way for both toolkits, so I will keep digging.
+
+Regarding the inference time, dlib since to be substantially faster with small batch sizes (up to 8 samples) by taking between 25-30% less time than PyTorch.
+As the batch size increases, the differences between both toolkits becomes minor.
 
 As for the memory usage, PyTorch models are stateless, meaning that one can't access any intermediate values of the model.
 On the dlib side, we can call `subnet()` on our `net` and then get the outputs, gradients (if we performed a backward pass), which makes it very easy to extract attention maps and perform grad-cam visualization.
