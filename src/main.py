@@ -35,7 +35,6 @@ with torch.no_grad():
         x = x.cpu().cuda()
         t0 = time()
         out = model(x)
-        out = out.cpu()
         t1 = time()
         times.append(t1 - t0)
         print("2nd inference time:", (t1 - t0) * 1000, "ms", end='\r')
