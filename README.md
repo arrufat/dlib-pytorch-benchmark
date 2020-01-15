@@ -73,7 +73,6 @@ for i in range(10):
     out = model(x)
     # time measurement end
 ```
-The times measured for each inference are around 6 ms, no matter the batch size (which is a good indicator that there are no memory transfers).
 
 ### dlib
 For dlib I followed a similar pattern:
@@ -88,12 +87,6 @@ for (int i = 0; i < 10; ++i)
     // time measurement end
 }
 ```
-Here, the times measured for the first inference varies with the batch size (for 128 is around 90 ms).
-However, the rest of forward calls are around 0.9 ms and indenpendent from the batch size.
-
-Since the first call timing variability is systematic, we can just ignore it, since when the network works in a steady state the forward pass time is constant.
-
-Nevertheless, if somebody has any idea of why this is happening, I would really love to know more.
 
 ## Results
 
