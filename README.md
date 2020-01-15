@@ -108,17 +108,16 @@ As stated before, they are mostly meaningless:
 The following table shows the VRAM usage in MiB and the average timings in ms for different batch sizes for a tensor of shape Nx3x224x224.
 
 |            | Memory  | (MiB) |        | Time    | (ms)    |        |
-|------------|---------|-------|--------|---------|---------|--------|
-| batch size | PyTorch |  dlib | Factor | PyTorch | dlib    | Factor |
-|          0 |     473 |   600 |   1.27 |     N/A |     N/A |    N/A |
-|          1 |     711 |   632 |   0.89 |  12.581 |   7.647 |  0.608 |
-|          2 |     709 |   706 |   0.99 |  14.060 |   8.448 |  0.601 |
-|          4 |     729 |   840 |   1.15 |  16.850 |  12.088 |  0.717 |
-|          8 |     765 |  1092 |   1.43 |  23.421 |  17.810 |  0.760 |
-|         16 |     881 |  1556 |   1.77 |  34.879 |  30.440 |  0.873 |
-|         32 |    1211 |  2604 |   2.15 |  60.421 |  58.028 |  0.960 |
-|         64 |    1689 |  4536 |   2.68 | 110.507 | 112.568 |  1.019 |
-|        128 |    2303 |  8374 |   3.64 | 214.652 | 222.337 |  1.036 |
+|-----------:|--------:|------:|-------:|--------:|--------:|-------:|
+| batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
+|          1 |     691 |   632 |  0.915 |  12.581 |   7.647 |  0.608 |
+|          2 |     689 |   706 |  1.025 |  14.060 |   8.448 |  0.601 |
+|          4 |     707 |   840 |  1.188 |  16.850 |  12.088 |  0.717 |
+|          8 |     759 |  1092 |  1.544 |  23.421 |  17.810 |  0.760 |
+|         16 |     881 |  1556 |  1.766 |  34.879 |  30.440 |  0.873 |
+|         32 |    1029 |  2604 |  2.531 |  60.421 |  58.028 |  0.960 |
+|         64 |    1555 |  4536 |  2.917 | 110.507 | 112.568 |  1.019 |
+|        128 |    2411 |  8374 |  3.473 | 214.652 | 220.621 |  1.028 |
 
 ## Conclusions
 
@@ -129,3 +128,5 @@ As the batch size increases, the differences between both toolkits becomes minor
 
 As for the memory usage, PyTorch models are stateless, meaning that one can't access any intermediate values of the model.
 On the dlib side, we can call `subnet()` on our `net` and then get the outputs, gradients (if we performed a backward pass), which makes it very easy to extract attention maps and perform grad-cam visualization.
+
+However, I did observe that PyTorch memory peaks at 2929 MiB and 3843 MiB for batch sizes of 1 and 128 respectively, while dlib increases steadily.
