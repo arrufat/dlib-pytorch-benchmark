@@ -2,7 +2,7 @@ import torch
 from os import environ
 from sys import argv
 from time import time
-from torchvision.models import resnet50
+from torchvision.models import resnet50 as resnet
 
 torch.backends.cudnn.benchmark = True
 environ["CUDA_LAUNCH_BLOCKING"] = "1"
@@ -17,7 +17,7 @@ with torch.no_grad():
     print('input shape:', x.shape)
 
     t0 = time()
-    model = resnet50(pretrained=False)
+    model = resnet(pretrained=False)
     t1 = time()
     print("instantiation time:", (t1 - t0) * 1000, "ms")
     input()
