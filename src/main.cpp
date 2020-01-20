@@ -35,6 +35,7 @@ int main(const int argc, const char** argv) try
     dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
     std::vector<dlib::matrix<dlib::rgb_pixel>> minibatch(mini_batch_size, image);
     // create some labels
+    std::vector<unsigned long> labels(mini_batch_size, 0);
 
     // Convert them to a tensor for this network. This way we only measure inference and not data transfer
     // In PyTorch, this would be: x = x.cuda()
@@ -63,9 +64,28 @@ int main(const int argc, const char** argv) try
         std::cout << "2nd inference time: " << duration << " ms   \r" << std::flush;
         time = duration;
     }
-    std::cout << std::endl;
     std::cout <<
-        "avg: " << std::fixed << std::setprecision(3) <<
+        "\navg: " << std::fixed << std::setprecision(3) <<
+        std::accumulate(times.begin(), times.end(), 0.f, std::plus<float>()) / times.size() <<
+        " ms" << std::endl;
+    std::cin.get();
+
+    // measure backward pass
+    net.clean();
+    auto trainer = dlib::dnn_trainer(net);
+    trainer.train_one_step(minibatch, labels);
+    trainer.train_one_step(minibatch, labels);
+    for (auto& time : times)
+    {
+        t0 = std::chrono::steady_clock::now();
+        trainer.train_one_step(minibatch, labels);
+        t1 = std::chrono::steady_clock::now();
+        duration = std::chrono::duration_cast<fms>(t1 - t0).count();
+        std::cout << "backward pass time: " << duration << " ms   \r" << std::flush;
+        time = duration;
+    }
+    std::cout <<
+        "\navg: " << std::fixed << std::setprecision(3) <<
         std::accumulate(times.begin(), times.end(), 0.f, std::plus<float>()) / times.size() <<
         " ms" << std::endl;
     std::cin.get();

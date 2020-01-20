@@ -43,3 +43,31 @@ with torch.no_grad():
     print()
     print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
     input()
+
+# measure the backward pass
+model = resnet(pretrained=False)
+model = model.cuda()
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+
+x = torch.zeros(minibatch_size, 3, 224, 224, requires_grad=True)
+model(x.cuda())
+labels = torch.zeros((minibatch_size), dtype=torch.long)
+times = []
+for epoch in range(100):
+    x = x.cpu()
+    labels = labels.cpu()
+    t0 = time()
+    x = x.cuda()
+    labels = labels.cuda()
+    optimizer.zero_grad()
+    outputs = model(x)
+    loss = criterion(outputs, labels)
+    loss.backward()
+    optimizer.step()
+    t1 = time()
+    times.append(t1 - t0)
+    print("backward pass time:", (t1 - t0) * 1000, "ms", end='\r')
+print()
+print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
+input()

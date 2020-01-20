@@ -103,7 +103,7 @@ The following table shows the VRAM usage in MiB and the average timings in ms fo
 |            | Memory  | (MiB) |        | Time    | (ms)    |        |
 |-----------:|--------:|------:|-------:|--------:|--------:|-------:|
 | batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
-|          1 |     691 |   640 |  0.915 |  12.581 |   7.647 |  0.608 |
+|          1 |     691 |   640 |  0.926 |  12.581 |   7.647 |  0.608 |
 |          2 |     689 |   716 |  1.039 |  14.060 |   8.448 |  0.601 |
 |          4 |     707 |   838 |  1.185 |  16.850 |  12.088 |  0.717 |
 |          8 |     759 |  1076 |  1.418 |  23.421 |  17.810 |  0.760 |
@@ -111,6 +111,21 @@ The following table shows the VRAM usage in MiB and the average timings in ms fo
 |         32 |    1029 |  2504 |  2.433 |  60.421 |  58.028 |  0.960 |
 |         64 |    1555 |  4336 |  2.788 | 110.507 | 112.568 |  1.019 |
 |        128 |    2411 |  7970 |  3.301 | 214.652 | 220.621 |  1.028 |
+
+Preliminary results for the complete train cycle (data + forward + backward + loss + optimize):
+
+|            | Memory  | (MiB) |        | Time    | (ms)    |        |
+|-----------:|--------:|------:|-------:|--------:|--------:|-------:|
+| batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
+|          1 |     965 |   969 |        |  60.609 |  40.077 |        |
+|          2 |    1051 |  1123 |        |  76.304 |  50.295 |        |
+|          4 |    1249 |  1421 |        |  99.065 |  72.338 |        |
+|          8 |    1619 |  1955 |        | 143.598 | 116.226 |        |
+|         16 |    2559 |  2971 |        | 230.760 | 204.418 |        |
+|         32 |    4011 |  5075 |        | 409.048 | 384.805 |        |
+|         64 |    7289 |  9155 |        |1359.625 | 741.691 |        |
+
+Please, do not take this table seriously, since I am not sure I am benchmarking PyTorch correctly.
 
 ## Conclusions
 
