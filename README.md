@@ -103,23 +103,21 @@ The following table shows the VRAM usage in MiB and the average timings in ms fo
 |            | Memory  | (MiB) |        | Time    | (ms)    |        |
 |-----------:|--------:|------:|-------:|--------:|--------:|-------:|
 | batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
-|          1 |     691 |   632 |  0.915 |  12.581 |   7.647 |  0.608 |
-|          2 |     689 |   706 |  1.025 |  14.060 |   8.448 |  0.601 |
-|          4 |     707 |   840 |  1.188 |  16.850 |  12.088 |  0.717 |
-|          8 |     759 |  1092 |  1.544 |  23.421 |  17.810 |  0.760 |
-|         16 |     881 |  1556 |  1.766 |  34.879 |  30.440 |  0.873 |
-|         32 |    1029 |  2604 |  2.531 |  60.421 |  58.028 |  0.960 |
-|         64 |    1555 |  4536 |  2.917 | 110.507 | 112.568 |  1.019 |
-|        128 |    2411 |  8374 |  3.473 | 214.652 | 220.621 |  1.028 |
+|          1 |     691 |   640 |  0.915 |  12.581 |   7.647 |  0.608 |
+|          2 |     689 |   716 |  1.039 |  14.060 |   8.448 |  0.601 |
+|          4 |     707 |   838 |  1.185 |  16.850 |  12.088 |  0.717 |
+|          8 |     759 |  1076 |  1.418 |  23.421 |  17.810 |  0.760 |
+|         16 |     881 |  1506 |  1.701 |  34.879 |  30.440 |  0.873 |
+|         32 |    1029 |  2504 |  2.433 |  60.421 |  58.028 |  0.960 |
+|         64 |    1555 |  4336 |  2.788 | 110.507 | 112.568 |  1.019 |
+|        128 |    2411 |  7970 |  3.301 | 214.652 | 220.621 |  1.028 |
 
 ## Conclusions
 
-I am still not sure I am measuring the inference times in a fair way for both toolkits, so I will keep digging.
-
-Regarding the inference time, dlib since to be substantially faster with small batch sizes (up to 8 samples) by taking between 25-30% less time than PyTorch.
+Regarding the inference time, dlib since to be substantially faster with small batch sizes (up to 8 samples) by taking between 25-40% less time than PyTorch.
 As the batch size increases, the differences between both toolkits becomes minor.
 
 As for the memory usage, PyTorch models are stateless, meaning that one can't access any intermediate values of the model.
 On the dlib side, we can call `subnet()` on our `net` and then get the outputs, gradients (if we performed a backward pass), which makes it very easy to extract attention maps and perform grad-cam visualization.
 
-However, I did observe that PyTorch memory peaks at 2929 MiB and 3843 MiB for batch sizes of 1 and 128 respectively, while dlib increases steadily.
+However, I did observe that PyTorch memory peaks at 2929 MiB and 3843 MiB for batch sizes of 1 and 128 respectively. This is caused by the `torch.backends.cudnn.benchmark = True` setting.
