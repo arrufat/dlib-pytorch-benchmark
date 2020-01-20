@@ -61,8 +61,8 @@ struct resnet
     template<typename SUBNET> using resbottleneck_64  = residual_block<residual, bottleneck,  64, BATCHNORM, SUBNET>;
 
     // common processing for standard resnet inputs
-    template<typename INPUT>
-    using input_processing = dlib::max_pool<3, 3, 2, 2, dlib::relu<dlib::bn_con<dlib::con<64, 7, 7, 2, 2, INPUT>>>>;
+    template<template<typename> class BN, typename INPUT>
+    using input_processing = dlib::max_pool<3, 3, 2, 2, dlib::relu<BN<dlib::con<64, 7, 7, 2, 2, INPUT>>>>;
 
     // the resnet backbone with basicblocks
     template<long nb_512, long nb_256, long nb_128, long nb_64, typename INPUT>
@@ -70,7 +70,7 @@ struct resnet
         dlib::repeat<nb_512, resbasicblock_512, resbasicblock_down<512,
         dlib::repeat<nb_256, resbasicblock_256, resbasicblock_down<256,
         dlib::repeat<nb_128, resbasicblock_128, resbasicblock_down<128,
-        dlib::repeat<nb_64,  resbasicblock_64, input_processing<INPUT>>>>>>>>;
+        dlib::repeat<nb_64,  resbasicblock_64, input_processing<BATCHNORM, INPUT>>>>>>>>;
 
     // the resnet backbone with bottlenecks
     template<long nb_512, long nb_256, long nb_128, long nb_64, typename INPUT>
@@ -78,7 +78,7 @@ struct resnet
         dlib::repeat<nb_512, resbottleneck_512, resbottleneck_down<512,
         dlib::repeat<nb_256, resbottleneck_256, resbottleneck_down<256,
         dlib::repeat<nb_128, resbottleneck_128, resbottleneck_down<128,
-        dlib::repeat<nb_64,  resbottleneck_64, input_processing<INPUT>>>>>>>>;
+        dlib::repeat<nb_64,  resbottleneck_64, input_processing<BATCHNORM, INPUT>>>>>>>>;
 
     // the backbones for the classic architectures
     template<typename INPUT> using backbone_18  = backbone_basicblock<1, 1, 1, 2, INPUT>;
@@ -88,9 +88,9 @@ struct resnet
     template<typename INPUT> using backbone_152 = backbone_bottleneck<2, 35, 7, 3, INPUT>;
 
     // the typical classifier models
-    using  _18  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_18<dlib::input_rgb_image>>>>;
-    using  _34  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_34<dlib::input_rgb_image>>>>;
-    using  _50  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_50<dlib::input_rgb_image>>>>;
-    using  _101 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_101<dlib::input_rgb_image>>>>;
-    using  _152 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_152<dlib::input_rgb_image>>>>;
+    using  l18  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_18<dlib::input_rgb_image>>>>;
+    using  l34  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_34<dlib::input_rgb_image>>>>;
+    using  l50  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_50<dlib::input_rgb_image>>>>;
+    using  l101 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_101<dlib::input_rgb_image>>>>;
+    using  l152 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_152<dlib::input_rgb_image>>>>;
 };

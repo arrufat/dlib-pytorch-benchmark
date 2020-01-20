@@ -20,6 +20,8 @@ with torch.no_grad():
     model = resnet(pretrained=False)
     t1 = time()
     print("instantiation time:", (t1 - t0) * 1000, "ms")
+    num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print("parameters:", num_params)
     input()
 
     t0 = time()
