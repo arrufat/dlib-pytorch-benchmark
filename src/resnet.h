@@ -1,34 +1,39 @@
+#ifndef ResNet_H
+#define ResNet_H
+
 #include <dlib/dnn.h>
+
+// clang-format off
 
 // BATCHNORM must be bn_con or affine layer
 template<template<typename> class BATCHNORM>
 struct resnet
 {
-    // the resnet basic block, where REG is bn_con or affine
+    // the resnet basic block, where BN is bn_con or affine
     template<long num_filters, template<typename> class BN, int stride, typename SUBNET>
     using basicblock = BN<dlib::con<num_filters, 3, 3, 1, 1,
-                  dlib::relu<BN<dlib::con<num_filters, 3, 3, stride, stride, SUBNET>>>>>;
+            dlib::relu<BN<dlib::con<num_filters, 3, 3, stride, stride, SUBNET>>>>>;
 
     // the resnet bottleneck block
     template<long num_filters, template<typename> class BN, int stride, typename SUBNET>
     using bottleneck = BN<dlib::con<4 * num_filters, 1, 1, 1, 1,
-                  dlib::relu<BN<dlib::con<num_filters, 3, 3, stride, stride,
-                  dlib::relu<BN<dlib::con<num_filters, 1, 1, 1, 1, SUBNET>>>>>>>>;
+            dlib::relu<BN<dlib::con<num_filters, 3, 3, stride, stride,
+            dlib::relu<BN<dlib::con<num_filters, 1, 1, 1, 1, SUBNET>>>>>>>>;
 
     // the resnet residual
     template<
-        template<long, template<typename> class, int, typename> class BLOCK, // basicblock or bottleneck
+        template<long, template<typename> class, int, typename> class BLOCK,  // basicblock or bottleneck
         long num_filters,
-        template<typename> class BN, // regularization: bn_con or affine
+        template<typename> class BN, // bn_con or affine
         typename SUBNET
     > // adds the block to the result of tag1 (the subnet)
     using residual = dlib::add_prev1<BLOCK<num_filters, BN, 1, dlib::tag1<SUBNET>>>;
 
     // a resnet residual that does subsampling on both paths
     template<
-        template<long, template<typename> class, int, typename> class BLOCK, // basicblock or bottleneck
+        template<long, template<typename> class, int, typename> class BLOCK,  // basicblock or bottleneck
         long num_filters,
-        template<typename> class BN, // regularization: bn_con or affine
+        template<typename> class BN, // bn_con or affine
         typename SUBNET
     >
     using residual_down = dlib::add_prev2<dlib::avg_pool<2, 2, 2, 2,
@@ -40,7 +45,7 @@ struct resnet
         template<template<long, template<typename> class, int, typename> class, long, template<typename>class, typename> class RESIDUAL,
         template<long, template<typename> class, int, typename> class BLOCK,
         long num_filters,
-        template<typename> class BN, // regularization: bn_con or affine
+        template<typename> class BN, // bn_con or affine
         typename SUBNET
     >
     using residual_block = dlib::relu<RESIDUAL<BLOCK, num_filters, BN, SUBNET>>;
@@ -88,9 +93,13 @@ struct resnet
     template<typename INPUT> using backbone_152 = backbone_bottleneck<2, 35, 7, 3, INPUT>;
 
     // the typical classifier models
-    using  l18  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_18<dlib::input_rgb_image>>>>;
-    using  l34  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_34<dlib::input_rgb_image>>>>;
-    using  l50  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_50<dlib::input_rgb_image>>>>;
-    using  l101 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_101<dlib::input_rgb_image>>>>;
-    using  l152 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_152<dlib::input_rgb_image>>>>;
+    using n18  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_18<dlib::input_rgb_image>>>>;
+    using n34  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_34<dlib::input_rgb_image>>>>;
+    using n50  = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_50<dlib::input_rgb_image>>>>;
+    using n101 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_101<dlib::input_rgb_image>>>>;
+    using n152 = dlib::loss_multiclass_log<dlib::fc<1000, dlib::avg_pool_everything<backbone_152<dlib::input_rgb_image>>>>;
 };
+
+// clang-format on
+
+#endif  // ResNet_H

@@ -14,7 +14,7 @@ if len(argv) > 1:
 # if True:
 with torch.no_grad():
     x = torch.zeros(minibatch_size, 3, 224, 224)
-    print('input shape:', x.shape)
+    print("input shape:", x.shape)
 
     t0 = time()
     model = resnet(pretrained=False)
@@ -39,35 +39,34 @@ with torch.no_grad():
         out = model(x)
         t1 = time()
         times.append(t1 - t0)
-        print("2nd inference time:", (t1 - t0) * 1000, "ms", end='\r')
+        print("2nd inference time:", (t1 - t0) * 1000, "ms", end="\r")
     print()
     print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
     input()
 
 # measure the backward pass
-model = resnet(pretrained=False)
-model = model.cuda()
-criterion = torch.nn.CrossEntropyLoss()
+model = resnet(pretrained=False).cuda()
+criterion = torch.nn.CrossEntropyLoss().cuda()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
 
 x = torch.zeros(minibatch_size, 3, 224, 224, requires_grad=True)
-model(x.cuda())
 labels = torch.zeros((minibatch_size), dtype=torch.long)
 times = []
 for epoch in range(100):
     x = x.cpu()
     labels = labels.cpu()
     t0 = time()
-    x = x.cuda()
-    labels = labels.cuda()
     optimizer.zero_grad()
-    outputs = model(x)
-    loss = criterion(outputs, labels)
+    outputs = model(x.cuda())
+    loss = criterion(outputs, labels.cuda())
     loss.backward()
     optimizer.step()
+    outputs = outputs.cpu()
     t1 = time()
     times.append(t1 - t0)
-    print("backward pass time:", (t1 - t0) * 1000, "ms", end='\r')
+    print("backward pass time:", (t1 - t0) * 1000, "ms", end="\r")
 print()
+# for t in times:
+#     print("time: {:.3f} ms".format(t * 1000))
 print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
 input()

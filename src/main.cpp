@@ -24,7 +24,7 @@ int main(const int argc, const char** argv) try
     // dlib::set_dnn_prefer_smallest_algorithms();
     // Declare the network
     t0 = std::chrono::steady_clock::now();
-    resnet<dlib::affine>::l50 net;
+    resnet<dlib::bn_con>::n50 net;
     t1 = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<fms>(t1 - t0).count();
     std::cout << "instantiation time: " << duration << " ms" << std::endl;
@@ -50,6 +50,7 @@ int main(const int argc, const char** argv) try
     std::cout << "1st inference time: " << duration << " ms" << std::endl;
     std::cout << "input shape: " << x.num_samples() << 'x' << x.k() << 'x' << x.nr() << 'x' << x.nc() << std::endl;
     std::cout << "parameters: " << dlib::count_parameters(net) << std::endl;
+    std::cout << net << std::endl;
     std::cin.get();
 
     std::array<float, 100> times;
@@ -71,6 +72,8 @@ int main(const int argc, const char** argv) try
     std::cin.get();
 
     // measure backward pass
+    x.clear();
+    x.set_size(0);
     net.clean();
     auto trainer = dlib::dnn_trainer(net);
     trainer.train_one_step(minibatch, labels);

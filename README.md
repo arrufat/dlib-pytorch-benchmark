@@ -13,7 +13,7 @@ model = resnet50(pretrained=False)
 
 ### dlib
 ``` c++
-resnet<dlib::affine>::_50 net;
+resnet<dlib::affine>::n50 net;
 ```
 
 ## 1st inference
