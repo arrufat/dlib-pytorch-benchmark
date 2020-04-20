@@ -4,7 +4,7 @@ from sys import argv
 from time import time
 from torchvision.models import resnet50 as resnet
 
-torch.backends.cudnn.benchmark = True
+# torch.backends.cudnn.benchmark = True
 environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 minibatch_size = 1
@@ -17,7 +17,7 @@ with torch.no_grad():
     print("input shape:", x.shape)
 
     t0 = time()
-    model = resnet(pretrained=False)
+    model = resnet(pretrained=False).eval()
     t1 = time()
     print("instantiation time:", (t1 - t0) * 1000, "ms")
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -36,7 +36,7 @@ with torch.no_grad():
     for i in range(100):
         x = x.cpu().cuda()
         t0 = time()
-        out = model(x)
+        model(x)
         t1 = time()
         times.append(t1 - t0)
         print("2nd inference time:", (t1 - t0) * 1000, "ms", end="\r")
@@ -47,10 +47,20 @@ with torch.no_grad():
 # measure the backward pass
 model = resnet(pretrained=False).cuda()
 criterion = torch.nn.CrossEntropyLoss().cuda()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+optimizer = torch.optim.SGD(
+    model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0005
+)
 
 x = torch.zeros(minibatch_size, 3, 224, 224, requires_grad=True)
 labels = torch.zeros((minibatch_size), dtype=torch.long)
+
+# do one iteration outside of the loop for the memory allocation
+optimizer.zero_grad()
+outputs = model(x.cuda())
+loss = criterion(outputs, labels.cuda())
+loss.backward()
+optimizer.step()
+
 times = []
 for epoch in range(100):
     x = x.cpu()
@@ -61,7 +71,7 @@ for epoch in range(100):
     loss = criterion(outputs, labels.cuda())
     loss.backward()
     optimizer.step()
-    outputs = outputs.cpu()
+    # outputs = outputs.cpu()
     t1 = time()
     times.append(t1 - t0)
     print("backward pass time:", (t1 - t0) * 1000, "ms", end="\r")

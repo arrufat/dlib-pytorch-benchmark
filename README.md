@@ -12,7 +12,7 @@ model = resnet50(pretrained=False)
 ```
 
 ### dlib
-``` c++
+``` cpp
 resnet<dlib::affine>::n50 net;
 ```
 
@@ -30,14 +30,14 @@ out = model(x)
 ```
 
 ### dlib
-``` c++
+``` cpp
 dlib::matrix<dlib::rgb_pixel> image(224, 224);
 dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
 std::vector<dlib::matrix<dlib::rgb_pixel>> minibatch(512, image);
 ```
 
 At this point, we could just call:
-``` c++
+``` cpp
 const auto out = net(minibatch, 512);
 ```
 But that wouldn't be a fair comparison, since it would do some extra work:
@@ -47,7 +47,7 @@ But that wouldn't be a fair comparison, since it would do some extra work:
 As a result, we need to forward a tensor that is already in the device.
 There are several ways of doing it, here's one:
 
-``` c++
+``` cpp
 dlib::resizable tensor x;
 net.to_tensor(minibatch.begin(), minibatch.end(), x);
 x.device();
@@ -77,7 +77,7 @@ for i in range(10):
 ### dlib
 For dlib I followed a similar pattern:
 
-``` c++
+``` cpp
 for (int i = 0; i < 10; ++i)
 {
     x.host();
