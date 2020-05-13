@@ -76,7 +76,5 @@ for epoch in range(100):
     times.append(t1 - t0)
     print("backward pass time:", (t1 - t0) * 1000, "ms", end="\r")
 print()
-# for t in times:
-#     print("time: {:.3f} ms".format(t * 1000))
 print("avg: {:.3f} ms".format(sum(times) * 1000 / len(times)))
 input()

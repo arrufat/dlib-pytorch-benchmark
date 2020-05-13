@@ -1,5 +1,5 @@
 # dlib-pytorch-benchmark
-A very naive and simple benchmark between dlib and pytorch in terms of space and time.
+A very naive and simple benchmark between dlib master and PyTorch 1.4.1 in terms of space and time.
 
 This benchmarks were run on a NVIDIA GeForce GTX 1080 Ti with CUDA 10.2.89 and CUDNN 7.6.5.32 on Arch Linux.
 
@@ -21,7 +21,7 @@ This is also not very meaningful, since most of the time is spent allocating mem
 
 ### PyTorch
 ``` python
-x = torch.zeros(512, 3, 224, 224)
+x = torch.zeros(32, 3, 224, 224)
 x = x.cuda()
 model = model.cuda()
 # time measurement start
@@ -90,42 +90,31 @@ for (int i = 0; i < 10; ++i)
 
 ## Results
 
-This first table shows the results of the instantiation and first inference times for a tensor of shape 128x3x224x224.
-As stated before, they are mostly meaningless:
+The first table shows the VRAM usage in MiB and the average timings in ms for different batch sizes for a tensor of shape Nx3x224x224.
 
-| Test           |  PyTorch |   dlib   |
-|---------------:|:--------:|:--------:|
-|  instantiation |  239.672 |    0.078 |
-|  1st inference | 1160.368 | 2609.590 |
+|            | Memory  | (MiB)   |        | Time    | (ms)    |        |
+|-----------:|--------:|--------:|-------:|--------:|--------:|-------:|
+| batch size |    dlib | PyTorch | Factor | PyTorch |    dlib | Factor |
+|          1 |     638 |     721 |  0.885 |   6.886 |  10.048 |  0.685 |
+|          2 |     710 |     719 |  0.987 |   7.845 |  11.449 |  0.685 |
+|          4 |     836 |     739 |  1.131 |  11.373 |  14.095 |  0.807 |
+|          8 |    1074 |     775 |  1.386 |  17.504 |  19.303 |  0.907 |
+|         16 |    1512 |     889 |  1.701 |  31.288 |  30.628 |  1.022 |
+|         32 |    2510 |    1219 |  2.059 |  60.348 |  56.571 |  1.067 |
+|         64 |    4342 |    1699 |  2.556 | 117.544 | 105.139 |  1.118 |
+|        128 |    7976 |    2313 |  3.448 | 224.402 | 202.120 |  1.110 |
 
-The following table shows the VRAM usage in MiB and the average timings in ms for different batch sizes for a tensor of shape Nx3x224x224.
+Results for the complete train cycle (transfer + forward + backward + loss + optimize):
 
-|            | Memory  | (MiB) |        | Time    | (ms)    |        |
-|-----------:|--------:|------:|-------:|--------:|--------:|-------:|
-| batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
-|          1 |     691 |   640 |  0.926 |  12.581 |   7.647 |  0.608 |
-|          2 |     689 |   716 |  1.039 |  14.060 |   8.448 |  0.601 |
-|          4 |     707 |   838 |  1.185 |  16.850 |  12.088 |  0.717 |
-|          8 |     759 |  1076 |  1.418 |  23.421 |  17.810 |  0.760 |
-|         16 |     881 |  1506 |  1.701 |  34.879 |  30.440 |  0.873 |
-|         32 |    1029 |  2504 |  2.433 |  60.421 |  58.028 |  0.960 |
-|         64 |    1555 |  4336 |  2.788 | 110.507 | 112.568 |  1.019 |
-|        128 |    2411 |  7970 |  3.301 | 214.652 | 220.621 |  1.028 |
-
-Preliminary results for the complete train cycle (data + forward + backward + loss + optimize):
-
-|            | Memory  | (MiB) |        | Time    | (ms)    |        |
-|-----------:|--------:|------:|-------:|--------:|--------:|-------:|
-| batch size | PyTorch |  dlib | Factor | PyTorch |    dlib | Factor |
-|          1 |     965 |   969 |        |  60.609 |  40.077 |        |
-|          2 |    1051 |  1123 |        |  76.304 |  50.295 |        |
-|          4 |    1249 |  1421 |        |  99.065 |  72.338 |        |
-|          8 |    1619 |  1955 |        | 143.598 | 116.226 |        |
-|         16 |    2559 |  2971 |        | 230.760 | 204.418 |        |
-|         32 |    4011 |  5075 |        | 409.048 | 384.805 |        |
-|         64 |    7289 |  9155 |        |1359.625 | 741.691 |        |
-
-Please, do not take this table seriously, since I am not sure I am benchmarking PyTorch correctly.
+|            | Memory |   (MiB) |        |    Time |    (ms) |        |
+|-----------:|-------:|--------:|-------:|--------:|--------:|-------:|
+| batch size |   dlib | PyTorch | Factor |    dlib | PyTorch | Factor |
+|          1 |    973 |     991 |  0.982 |  39.292 |  47.571 |  0.826 |
+|          2 |   1248 |    1119 |  1.115 |  29.308 |  51.219 |  0.572 |
+|          4 |   1708 |    1281 |  1.333 |   40.95 |  60.329 |  0.679 |
+|          8 |   2548 |    1645 |  1.549 |  65.193 |  78.995 |  0.825 |
+|         16 |   4096 |    2389 |  1.715 | 113.596 | 116.117 |  0.978 |
+|         32 |   7240 |    4061 |  1.783 | 218.968 | 203.942 |  1.074 |
 
 ## Conclusions
 

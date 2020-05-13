@@ -16,17 +16,20 @@ int main(const int argc, const char** argv)try
     float duration{};
 
     size_t mini_batch_size = 1;
-    if (argc == 2)
+    size_t image_size = 224;
+    if (argc > 1)
     {
         mini_batch_size = std::stoul(argv[1]);
     }
+    if (argc > 2)
+    {
+        image_size = std::stoul(argv[2]);
+    }
 
     // Create the images to test
-    dlib::matrix<dlib::rgb_pixel> image(224, 224);
+    dlib::matrix<dlib::rgb_pixel> image(image_size, image_size);
     dlib::assign_all_pixels(image, dlib::rgb_pixel(0, 0, 0));
-    std::vector<dlib::matrix<dlib::rgb_pixel>> minibatch(mini_batch_size, image);
-    // Create some labels
-    std::vector<unsigned long> labels(mini_batch_size, 0);
+    const std::vector<dlib::matrix<dlib::rgb_pixel>> minibatch(mini_batch_size, image);
 
     // The input tensor of the network
     dlib::resizable_tensor x;
@@ -72,6 +75,8 @@ int main(const int argc, const char** argv)try
         net.clean();
     }
 
+    // Create some labels
+    const std::vector<unsigned long> labels(mini_batch_size, 0);
     resnet::train_50 net;
     // measure backward pass
     std::vector<dlib::sgd> solvers(net.num_computational_layers, dlib::sgd(0.0005, 0.9));
