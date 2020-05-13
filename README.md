@@ -52,13 +52,13 @@ dlib::resizable tensor x;
 net.to_tensor(minibatch.begin(), minibatch.end(), x);
 x.device();
 // time measurement start
-net.subnet().forward(x);
+net.forward(x);
 // time measurement end
 ```
 Now dlib is doing exactly the same operations as PyTorch, as far as I know.
 
 ## Next inferences
-In my opininion, the most important benchmark is this one.
+In my opinion, the most important benchmark is this one.
 It measures how the network performs once it has been "warmed up".
 
 For this part, I decided not to count the cuda syncronization time, only the inference time for a tensor that is already in the device.
@@ -94,7 +94,7 @@ The first table shows the VRAM usage in MiB and the average timings in ms for di
 
 |            | Memory  | (MiB)   |        | Time    | (ms)    |        |
 |-----------:|--------:|--------:|-------:|--------:|--------:|-------:|
-| batch size |    dlib | PyTorch | Factor | PyTorch |    dlib | Factor |
+| batch size |    dlib | PyTorch | Factor |    dlib | PyTorch | Factor |
 |          1 |     638 |     721 |  0.885 |   6.886 |  10.048 |  0.685 |
 |          2 |     710 |     719 |  0.987 |   7.845 |  11.449 |  0.685 |
 |          4 |     836 |     739 |  1.131 |  11.373 |  14.095 |  0.807 |
@@ -118,10 +118,13 @@ Results for the complete train cycle (transfer + forward + backward + loss + opt
 
 ## Conclusions
 
-Regarding the inference time, dlib since to be substantially faster with small batch sizes (up to 8 samples) by taking between 25-40% less time than PyTorch.
-As the batch size increases, the differences between both toolkits becomes minor.
+Regarding the inference time, dlib since to be substantially faster with small batch sizes (up to 8 samples) by taking between 10-30% less time than PyTorch.
+As the batch size increases, the differences between both toolkits becomes minor and PyTorch seems to be faster for higher batch sizes
+
+For the training time, dlib also seems to be faster that PyTorch by a substancial amount for small batch sizes.
 
 As for the memory usage, PyTorch models are stateless, meaning that one can't access any intermediate values of the model.
 On the dlib side, we can call `subnet()` on our `net` and then get the outputs, gradients (if we performed a backward pass), which makes it very easy to extract attention maps and perform grad-cam visualization.
+That can explain the differences in memory usage by both toolkits.
 
 However, I did observe that PyTorch memory peaks at 2929 MiB and 3843 MiB for batch sizes of 1 and 128 respectively. This is caused by the `torch.backends.cudnn.benchmark = True` setting.
